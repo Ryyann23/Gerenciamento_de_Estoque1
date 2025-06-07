@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | QuantumStock</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="static/css/styles.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="logo-text">Quantum<span>Stock</span></div>
+                </div>
+            </div>
+            
+            <div class="nav-container">
+                <div class="nav-title">Menu</div>
+                <nav class="nav-menu">
+                    <a href="/dashboard" class="nav-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/produtos" class="nav-item">
+                        <i class="fas fa-box-open"></i>
+                        <span>Produtos</span>
+                    </a>
+                    <a href="/fornecedores" class="nav-item">
+                        <i class="fas fa-truck"></i>
+                        <span>Fornecedores</span>
+                    </a>
+                    <a href="/relatorios" class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Relatórios</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="user-profile">
+                <div class="profile-content">
+                    <div class="profile-avatar">{{ current_user.initial }}</div>
+                    <div class="profile-info">
+                        <div class="profile-name">{{ current_user.name }}</div>
+                        <div class="profile-email">{{ current_user.email }}</div>
+                    </div>
+                    <a href="/logout" class="profile-logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+            
+            <div class="content">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard</h1>
+                </div>
+                
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                        </div>
+                        <div class="stat-title">Total de Produtos</div>
+                        <div class="stat-value" id="total-products">{{ total_products }}</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                        <div class="stat-title">Estoque Baixo</div>
+                        <div class="stat-value" id="low-stock">{{ low_stock_count }}</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon success">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="stat-title">Valor em Estoque</div>
+                        <div class="stat-value" id="stock-value">R$ {{ stock_value }}</div>
+                    </div>
+                </div>
+                
+                <div class="activity-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Atividades Recentes</h2>
+                    </div>
+                    
+                    <div class="activity-list">
+                        {% for activity in activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-{{ 'edit' if activity.action == 'update' else 'plus' }}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-text">
+                                    <strong>{{ activity.username }}</strong> {{ activity.details }}
+                                </p>
+                                <p class="activity-time">{{ activity.time }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

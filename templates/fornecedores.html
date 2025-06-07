@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fornecedores | QuantumStock</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="static/css/styles.css">
+    <script src="static/js/fornecedores.js" defer></script>
+    <style>
+        html {
+            overflow-y: hidden;
+        }
+        
+        .supplier-image-placeholder {
+            width: 40px;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: rgba(0, 184, 148, 0.1);
+            color: var(--success);
+        }
+        
+        .status-inactive {
+            background: rgba(214, 48, 49, 0.1);
+            color: var(--danger);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .small-btn {
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+        
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .filter-group {
+            flex: 1;
+        }
+        
+        .pagination-info {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+            position: absolute;
+            right: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-content, .print-content * {
+                visibility: visible;
+            }
+            .print-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar no-print">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="logo-text">Quantum<span>Stock</span></div>
+                </div>
+            </div>
+            
+            <div class="nav-container">
+                <div class="nav-title">Menu</div>
+                <nav class="nav-menu">
+                    <a href="/dashboard" class="nav-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/produtos" class="nav-item">
+                        <i class="fas fa-box-open"></i>
+                        <span>Produtos</span>
+                    </a>
+                    <a href="/fornecedores" class="nav-item active">
+                        <i class="fas fa-truck"></i>
+                        <span>Fornecedores</span>
+                    </a>
+                    <a href="/relatorios" class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Relatórios</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="user-profile">
+                <div class="profile-content">
+                    <div class="profile-avatar">{{ current_user.initial }}</div>
+                    <div class="profile-info">
+                        <div class="profile-name">{{ current_user.name }}</div>
+                        <div class="profile-email">{{ current_user.email }}</div>
+                    </div>
+                    <a href="/logout" class="profile-logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <div class="content">
+                <div class="page-header no-print">
+                    <h1 class="page-title">Gerenciamento de Fornecedores</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" id="addSupplierBtn">
+                            <i class="fas fa-plus"></i>
+                            <span>Adicionar Fornecedor</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card no-print" style="margin-bottom: 10px;">
+                    <div class="filters-container">
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" class="search-input" placeholder="Buscar fornecedores..." id="searchInput">
+                        </div>
+                        <div class="filter-group">
+                            <select class="search-input" id="categoryFilter">
+                                <option value="">Todas as categorias</option>
+                                <option>Eletrônicos</option>
+                                <option>Alimentos</option>
+                                <option>Móveis</option>
+                                <option>Vestuário</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <select class="search-input" id="statusFilter">
+                                <option value="">Todos os status</option>
+                                <option>Ativo</option>
+                                <option>Inativo</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-outline" id="applyFilters">
+                            <i class="fas fa-filter"></i>
+                            <span>Filtrar</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card"> 
+                    <div class="table-responsive">
+                        <table style="width: 100%; border-collapse: collapse;" id="suppliersTable">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <th style="padding: 12px 15px; text-align: left;">Código</th>
+                                    <th style="padding: 12px 15px; text-align: left;">Fornecedor</th>
+                                    <th style="padding: 12px 15px; text-align: left;">Categoria</th>
+                                    <th style="padding: 12px 15px; text-align: left;">Contato</th>
+                                    <th style="padding: 12px 15px; text-align: left;">Email</th>
+                                    <th style="padding: 12px 15px; text-align: right;">Status</th>
+                                    <th class="no-print" style="padding: 12px 15px; text-align: right;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for supplier in suppliers %}
+                                <tr data-id="{{ supplier.id }}" style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 12px 15px;">{{ supplier.code }}</td>
+                                    <td style="padding: 12px 15px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div class="supplier-image-placeholder">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 500;">{{ supplier.name }}</div>
+                                                <div style="font-size: 13px; color: var(--text-light);">{{ supplier.city }}, {{ supplier.state }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 12px 15px;">{{ supplier.category }}</td>
+                                    <td style="padding: 12px 15px;">{{ supplier.contact }}</td>
+                                    <td style="padding: 12px 15px;">{{ supplier.email }}</td>
+                                    <td style="padding: 12px 15px; text-align: right;">
+                                        <span class="status-badge {% if supplier.status == 'Ativo' %}status-active{% else %}status-inactive{% endif %}">
+                                            {{ supplier.status }}
+                                        </span>
+                                    </td>
+                                    <td class="no-print" style="padding: 12px 15px; text-align: right;">
+                                        <div class="action-buttons">
+                                            <button class="btn btn-outline small-btn edit-btn" data-id="{{ supplier.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline small-btn delete-btn" data-id="{{ supplier.id }}" style="color: var(--danger); border-color: var(--danger);">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 15px; border-top: 1px solid var(--border);">
+                        <div class="pagination-info">
+                            Mostrando <span id="startItem">1</span> a <span id="endItem">{{ [suppliers|length, 5]|min }}</span> de <span id="totalItems">{{ suppliers|length }}</span> fornecedores
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="btn btn-outline prev-page" style="padding: 8px 12px;" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-primary page-btn" style="padding: 8px 12px;" data-page="1">1</button>
+                            {% set total_pages = (suppliers|length / 5)|round(0, 'ceil') %}
+                            {% if total_pages > 1 %}
+                                <button class="btn btn-outline page-btn" style="padding: 8px 12px;" data-page="2">2</button>
+                            {% endif %}
+                            {% if total_pages > 2 %}
+                                <button class="btn btn-outline page-btn" style="padding: 8px 12px;" data-page="3">3</button>
+                            {% endif %}
+                            <button class="btn btn-outline next-page" style="padding: 8px 12px;" {% if suppliers|length <= 5 %}disabled{% endif %}>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="supplierModal" class="modal" style="display: none;">
+    <div class="modal-content" style="width: 90%; max-width: 700px;"> <!-- Aumentei o max-width -->
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Adicionar Novo Fornecedor</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <form id="supplierForm">
+            <input type="hidden" id="supplierId">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"> <!-- Layout em 2 colunas -->
+                <!-- Coluna 1 -->
+                <div>
+                    <div class="form-group">
+                        <label for="supplierName">Nome do Fornecedor*</label>
+                        <input type="text" id="supplierName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierCategory">Categoria*</label>
+                        <select id="supplierCategory" class="form-control" required>
+                            <option value="">Selecione uma categoria</option>
+                            <option>Eletrônicos</option>
+                            <option>Alimentos</option>
+                            <option>Móveis</option>
+                            <option>Vestuário</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierContact">Contato*</label>
+                        <input type="text" id="supplierContact" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierEmail">Email*</label>
+                        <input type="email" id="supplierEmail" class="form-control" required>
+                    </div>
+                </div>
+                
+                <!-- Coluna 2 -->
+                <div>
+                    <div class="form-group">
+                        <label for="supplierPhone">Telefone*</label>
+                        <input type="text" id="supplierPhone" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierStatus">Status*</label>
+                        <select id="supplierStatus" class="form-control" required>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierAddress">Endereço</label>
+                        <input type="text" id="supplierAddress" class="form-control">
+                    </div>
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="supplierCity">Cidade</label>
+                            <input type="text" id="supplierCity" class="form-control">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="supplierState">Estado</label>
+                            <input type="text" id="supplierState" class="form-control" maxlength="2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+</body>
+</html>
