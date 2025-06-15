@@ -11,7 +11,6 @@ def create_app():
 
     db.init_app(app)
 
-    # Importa e registra blueprints das rotas
     from routes.auth_routes import auth_bp
     from routes.product_routes import product_bp
     from routes.supplier_routes import supplier_bp
